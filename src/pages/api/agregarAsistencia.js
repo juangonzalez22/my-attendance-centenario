@@ -1,5 +1,7 @@
 // src/pages/api/agregarAsistencia.js
 import { google } from "googleapis";
+import fs from "fs/promises";
+import path from "path";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -8,6 +10,8 @@ export default async function handler(req, res) {
 
   try {
     const { id, nombre, grupo, fecha_hora } = req.body;
+
+    // Convertir la fecha a hora local de Colombia
     const fechaLocal = new Date(fecha_hora).toLocaleString("es-CO", {
       timeZone: "America/Bogota",
       hour12: false,
@@ -19,8 +23,8 @@ export default async function handler(req, res) {
       year: "numeric",
     });
 
-    // En lugar de fs + jsonfile, parseamos la variable de entorno
-    const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+    const credentialsPath = path.join(process.cwd(), "src/lib/google-credentials.json");
+    const credentials = JSON.parse(await fs.readFile(credentialsPath, "utf8"));
 
     const auth = new google.auth.GoogleAuth({
       credentials,
